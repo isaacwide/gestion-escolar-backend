@@ -14,11 +14,36 @@ class BearerTokenAuthentication(TokenAuthentication):
     keyword = "Bearer"
 
 
-class Profiles(models.Model):
+class Administradores(models.Model):
     id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profiles")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, default=None)
+    clave_admin = models.CharField(max_length=255,null=True, blank=True)
+    telefono = models.CharField(max_length=255, null=True, blank=True)
+    rfc = models.CharField(max_length=255,null=True, blank=True)
+    edad = models.IntegerField(null=True, blank=True)
+    ocupacion = models.CharField(max_length=255,null=True, blank=True)
     creation = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     update = models.DateTimeField(null=True, blank=True)
-    def __str__(self):
-        return f"Perfil de {self.user.first_name} {self.user.last_name}"
 
+    def __str__(self):
+        return "Perfil del admin "+self.user.first_name+" "+self.user.last_name
+    
+class Maestros(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, default=None)
+    id_trabajador = models.CharField(max_length=255,null=True, blank=True)
+    fecha_nacimiento = models.DateTimeField(auto_now_add=False, null=True, blank=True)
+    telefono = models.CharField(max_length=255, null=True, blank=True)
+    rfc = models.CharField(max_length=255,null=True, blank=True)
+    cubiculo = models.CharField(max_length=255,null=True, blank=True)
+    edad = models.IntegerField(null=True, blank=True)
+    area_investigacion = models.CharField(max_length=255,null=True, blank=True)
+    materias_array = models.TextField(null=True, blank=True)
+    creation = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    update = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return "Perfil del maestro "+self.user.first_name+" "+self.user.last_name
+    
+# TODO: Agregar modelo de alumnos
+# class Alumnos(models.Model):

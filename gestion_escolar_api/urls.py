@@ -3,11 +3,19 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from .views.bootstrap import VersionView
+from gestion_escolar_api.views import users
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("api-auth/", include("rest_framework.urls")),
-    path("api/version/", VersionView.as_view(), name="api-version"),
+    #Agregamos las endpoints de usuarios
+    #Create Admin
+        path('admin/', users.AdminView.as_view()),
+    #Lista de administradores
+        path('lista-admins/', users.AdminAll.as_view()),
+
+    # Crear Maestro
+        path('maestro/',users.Maestroview.as_view()),
+    #Edit Admin
+        #path('admins-edit/', users.AdminsViewEdit.as_view())
 ]
 
 if settings.DEBUG:
