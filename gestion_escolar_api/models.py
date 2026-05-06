@@ -47,3 +47,17 @@ class Maestros(models.Model):
     
 # TODO: Agregar modelo de alumnos
 # class Alumnos(models.Model):
+class Alumnos(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, default=None)
+    matricula = models.CharField(max_length=20, null=True, blank=True, unique=True)
+    fecha_nacimiento = models.DateTimeField(auto_now_add=False, null=True, blank=True)
+    telefono = models.CharField(max_length=20, null=True, blank=True)
+    curp = models.CharField(max_length=18, null=True, blank=True, unique=True)
+    carrera = models.CharField(max_length=255, null=True, blank=True)
+    materias_json = models.TextField(null=True, blank=True)  # igual que materias_array en Maestros
+    creation = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    update = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return "Perfil del alumno " + self.user.first_name + " " + self.user.last_name
