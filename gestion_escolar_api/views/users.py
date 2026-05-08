@@ -1,5 +1,8 @@
 from django.db.models import *
 from django.db import transaction
+from django.utils import timezone
+from datetime import datetime
+from dateutil.parser import parse
 from gestion_escolar_api.models import Administradores, Maestros
 from gestion_escolar_api.serializers import UserSerializer
 from gestion_escolar_api.serializers import *
@@ -128,7 +131,7 @@ class Maestroview(generics.CreateAPIView):
                                             rfc= request.data["rfc"].upper(),
                                             cubiculo = request.data['cubiculo'],
                                             area_investigacion = request.data['area_investigacion'],
-                                            fecha_nacimiento = request.data['fecha_nacimiento'],
+                                            fecha_nacimiento = timezone.make_aware(parse(request.data['fecha_nacimiento'])),
                                             materias_array = request.data['materias_array'])
             admin.save()
 
@@ -153,6 +156,7 @@ class Alumnoview(generics.CreateAPIView):
         
         if user.is_valid():
             #Grab user data
+            role = request.data['rol']
             matricula = request.data['matricula']
             first_name = request.data['first_name']
             last_name = request.data['last_name']
@@ -178,16 +182,17 @@ class Alumnoview(generics.CreateAPIView):
             user.save()
 
             #Asignar el rol al usuario a la tabla de grupos
-            group, created = Group.objects.get_or_create(name=matricula)
+            group, created = Group.objects.get_or_create(name=role)
             group.user_set.add(user)
             user.save()
 
             #Almacenar los datos adicionales del administrador en la tabla de administradores
             admin = Alumnos.objects.create(user=user,
+                                            matricula=matricula,
                                             telefono= request.data['telefono'],
                                             curp= request.data["curp"].upper(),
                                             carrera = request.data['carrera'],
-                                            fecha_nacimiento = request.data['fecha_nacimiento'],
+                                            fecha_nacimiento = timezone.make_aware(parse(request.data['fecha_nacimiento'])),
                                             materias_json = request.data['materias_json'])
             admin.save()
 
