@@ -14,11 +14,13 @@ from rest_framework.response import Response
 from django.contrib.auth.models import Group
 
 class AdminAll(generics.CreateAPIView):
+    #Esta función es esencial para todo donde se requiera autorización de inicio de sesión (token)
     permission_classes = (permissions.IsAuthenticated,)
+    # Invocamos la petición GET para obtener todos los administradores
     def get(self, request, *args, **kwargs):
-        user = request.user
-        #TODO: Regresar perfil del usuario
-        return Response({})
+        admin = Administradores.objects.filter(user__is_active = 1).order_by("id")
+        lista = AdminSerializer(admin, many=True).data  # noqa: F405
+        return Response(lista, 200)
 
 class AdminView(generics.CreateAPIView):
     # Permisos por método (sobrescribe el comportamiento default)
@@ -80,122 +82,10 @@ class AdminView(generics.CreateAPIView):
         return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class Maestroview(generics.CreateAPIView):
-
-    def get_permissions(self):
-        if self.request.method in ['GET', 'PUT', 'DELETE']:
-            return [permissions.IsAuthenticated()]
-        return []
-    
-    @transaction.atomic
-    def post(self, request, *args, **kwargs):
-        
-        # Serializamos los datos del administrador para volverlo de nuevo JSON
-        user = UserSerializer(data=request.data)
-        
-        if user.is_valid():
-            #Grab user data
-            role = request.data['rol']
-            first_name = request.data['first_name']
-            last_name = request.data['last_name']
-            email = request.data['email']
-            password = request.data['password']
-    
-            #Valida si existe el usuario o bien el email registrado
-            existing_user = User.objects.filter(email=email).first()
-
-            if existing_user:
-                return Response({"message":"Nombre de usuario "+email+", ya existe"},400)
-
-            user = User.objects.create( username = email,
-                                        email = email,
-                                        first_name = first_name,
-                                        last_name = last_name,
-                                        is_active = 1)
 
 
-            user.save()
-            #Cifrar la contraseña
-            user.set_password(password)
-            user.save()
-
-            #Asignar el rol al usuario a la tabla de grupos
-            group, created = Group.objects.get_or_create(name=role)
-            group.user_set.add(user)
-            user.save()
-
-            #Almacenar los datos adicionales del administrador en la tabla de administradores
-            admin = Maestros.objects.create(user=user,
-                                            telefono= request.data['telefono'],
-                                            id_trabajador = request.data['id_trabajador'],
-                                            rfc= request.data["rfc"].upper(),
-                                            cubiculo = request.data['cubiculo'],
-                                            area_investigacion = request.data['area_investigacion'],
-                                            fecha_nacimiento = timezone.make_aware(parse(request.data['fecha_nacimiento'])),
-                                            materias_array = request.data['materias_array'])
-            admin.save()
-
-            return Response({"Maestro  creado ID": admin.id }, 201)
-
-        return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 
-class Alumnoview(generics.CreateAPIView):
-
-    def get_permissions(self):
-        if self.request.method in ['GET', 'PUT', 'DELETE']:
-            return [permissions.IsAuthenticated()]
-        return []
-    
-    @transaction.atomic
-    def post(self, request, *args, **kwargs):
-        
-        # Serializamos los datos del administrador para volverlo de nuevo JSON
-        user = UserSerializer(data=request.data)
-        
-        if user.is_valid():
-            #Grab user data
-            role = request.data['rol']
-            matricula = request.data['matricula']
-            first_name = request.data['first_name']
-            last_name = request.data['last_name']
-            email = request.data['email']
-            password = request.data['password']
-    
-            #Valida si existe el usuario o bien el email registrado
-            existing_user = User.objects.filter(email=email).first()
-
-            if existing_user:
-                return Response({"message":"Nombre de usuario "+email+", ya existe"},400)
-
-            user = User.objects.create( username = email,
-                                        email = email,
-                                        first_name = first_name,
-                                        last_name = last_name,
-                                        is_active = 1)
 
 
-            user.save()
-            #Cifrar la contraseña
-            user.set_password(password)
-            user.save()
 
-            #Asignar el rol al usuario a la tabla de grupos
-            group, created = Group.objects.get_or_create(name=role)
-            group.user_set.add(user)
-            user.save()
-
-            #Almacenar los datos adicionales del administrador en la tabla de administradores
-            admin = Alumnos.objects.create(user=user,
-                                            matricula=matricula,
-                                            telefono= request.data['telefono'],
-                                            curp= request.data["curp"].upper(),
-                                            carrera = request.data['carrera'],
-                                            fecha_nacimiento = timezone.make_aware(parse(request.data['fecha_nacimiento'])),
-                                            materias_json = request.data['materias_json'])
-            admin.save()
-
-            return Response({"Alumno  creado ID": admin.id }, 201)
-
-        return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
