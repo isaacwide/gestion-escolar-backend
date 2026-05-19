@@ -11,6 +11,16 @@ from rest_framework import status
 from rest_framework.response import Response
 
 
+
+class AlumnoAll(generics.CreateAPIView):
+    #Esta función es esencial para todo donde se requiera autorización de inicio de sesión (token)
+    permission_classes = (permissions.IsAuthenticated,)
+    # Invocamos la petición GET para obtener todos los administradores
+    def get(self, request, *args, **kwargs):
+        alumno = Alumnos.objects.filter(user__is_active = 1).order_by("id")
+        lista = AlumnosSerializer(alumno, many=True).data  # noqa: F405
+        return Response(lista, 200)
+
 class Alumnoview(generics.CreateAPIView):
 
     def get_permissions(self):
@@ -69,4 +79,36 @@ class Alumnoview(generics.CreateAPIView):
             return Response({"Alumno  creado ID": admin.id }, 201)
 
         return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, *args, **kwargs):
+        alumno = Alumnos.objects.filter(id=request.GET.get("id"),user__is_active=1).first()
+        if not alumno:
+            return Response({"message": "Alumno no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = AlumnosSerializer(alumno)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        alumno = Alumnos.objects.filter(id=request.GET.get("id"),user__is_active=1).first()
+        if not alumno:
+            return Response({"message": "Alumno no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        user = alumno.user
+
+        #vamos a actualizar los campos de los alumnos s
+        user.first_name = request.data["first_name"]
+        user.last_name = request.data["last_name"]
+        user.save()
+
+        user.fecha_nacimiento = request.data["fecha_nacimiento"]
+        user.telefono = request.data["telefono"]
+        user.curp = request.data["curp"]
+        user.carrera = request.data["carrera"]
+        user.materias_json = request.data["materias_json"]
+
+        user.save()
+
+        return Response({"message": "Alumno actualizado correctamente"}, status=status.HTTP_200_OK)
+
     

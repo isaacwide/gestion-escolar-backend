@@ -19,6 +19,8 @@ urlpatterns = [
         path('lista-maestros/', maestros.MaestrosAll.as_view()),
     #Create Alumno
         path('alumno/', alumnos.Alumnoview.as_view()),
+    #obtener lista de tofos los alumnos
+        path('lista-alumnos/',alumnos.AlumnoAll.as_view()),
     #Login
         path('login/', auth.CustomAuthToken.as_view()),
     #Logout

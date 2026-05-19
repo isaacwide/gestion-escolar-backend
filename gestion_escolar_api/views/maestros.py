@@ -71,6 +71,46 @@ class MaestrosView(generics.CreateAPIView):
             return Response({"Maestro  creado ID": admin.id }, 201)
 
         return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request , *args, **kwargs):
+
+        maestro = Maestros.objects.filter(id=request.GET.get["id"],user__is_active=1).first()
+
+        if not maestro:
+            return Response({"message": "maestro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializers = MaestrosSerializer(maestro)
+
+        return Response(serializers.data,status.HTTP_200_OK)
+    
+    @transaction.atomic
+    def put(self, request , *args, **kwargs):
+
+        maestro = Maestros.objects.filter(id=request.GET.get["id"],user__is_active=1).first()
+
+        if not maestro:
+            return Response({"message": "maestro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        user = maestro.user
+
+        user.first_name = request.data["first_name"]
+        user.last_name = request.data["last_name"]
+        user.save()
+
+        # datos no tan importantes 
+        user.fecha_nacimiento = request.data["fecha_nacimiento"]
+        user.telefono = request.data["telefono"]
+        user.rfc = request.data["rfc"]
+        user.cubiculo = request.data["cubiculo"]
+
+        user.area_investigacion = request.data["area_investigacion"]
+        user.materias_array = request.data["materias_array"]
+
+
+        return Response({"message": "maestro actualizado correctamente"}, status=status.HTTP_200_OK)
+
+
+
 
 
 class MaestrosAll(generics.ListAPIView):
