@@ -90,7 +90,7 @@ class Alumnoview(generics.CreateAPIView):
     
     @transaction.atomic
     def put(self, request, *args, **kwargs):
-        alumno = Alumnos.objects.filter(id=request.GET.get("id"),user__is_active=1).first()
+        alumno = Alumnos.objects.filter(id=request.data["id"],user__is_active=1).first()
         if not alumno:
             return Response({"message": "Alumno no encontrado"}, status=status.HTTP_404_NOT_FOUND)
         

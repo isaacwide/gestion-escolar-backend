@@ -74,7 +74,7 @@ class MaestrosView(generics.CreateAPIView):
     
     def get(self, request , *args, **kwargs):
 
-        maestro = Maestros.objects.filter(id=request.GET.get["id"],user__is_active=1).first()
+        maestro = Maestros.objects.filter(id=request.GET.get("id"),user__is_active=1).first()
 
         if not maestro:
             return Response({"message": "maestro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
@@ -86,7 +86,7 @@ class MaestrosView(generics.CreateAPIView):
     @transaction.atomic
     def put(self, request , *args, **kwargs):
 
-        maestro = Maestros.objects.filter(id=request.GET.get["id"],user__is_active=1).first()
+        maestro = Maestros.objects.filter(id=request.data["id"],user__is_active=1).first()
 
         if not maestro:
             return Response({"message": "maestro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
@@ -110,15 +110,11 @@ class MaestrosView(generics.CreateAPIView):
         return Response({"message": "maestro actualizado correctamente"}, status=status.HTTP_200_OK)
 
 
-
-
-
-class MaestrosAll(generics.ListAPIView):
-    """Vista para listar todos los maestros"""
-    queryset = Maestros.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.AllowAny]
-
+class MaestrosAll(generics.CreateAPIView):
+    #Esta función es esencial para todo donde se requiera autorización de inicio de sesión (token)
+    permission_classes = (permissions.IsAuthenticated,)
+    # Invocamos la petición GET para obtener todos los administradores
     def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
+        maestro = Maestros.objects.filter(user__is_active = 1).order_by("id")
+        lista = MaestrosSerializer(maestro, many=True).data  # noqa: F405
+        return Response(lista, 200)
