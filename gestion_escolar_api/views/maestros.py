@@ -1,6 +1,7 @@
 from django.db.models import *
 from django.db import transaction
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from dateutil.parser import parse
 from django.contrib.auth.models import User, Group
 from gestion_escolar_api.models import *
@@ -65,7 +66,9 @@ class MaestrosView(generics.CreateAPIView):
                                             cubiculo = request.data['cubiculo'],
                                             area_investigacion = request.data['area_investigacion'],
                                             fecha_nacimiento = timezone.make_aware(parse(request.data['fecha_nacimiento'])),
-                                            materias_array = request.data['materias_array'])
+                                            materias_array = request.data['materias_array'],
+                                            campus = request.data['campus'],
+                                            sueldo = request.data['sueldo'] )
             admin.save()
 
             return Response({"Maestro  creado ID": admin.id }, 201)
@@ -98,16 +101,27 @@ class MaestrosView(generics.CreateAPIView):
         user.save()
 
         # datos no tan importantes 
-        user.fecha_nacimiento = request.data["fecha_nacimiento"]
-        user.telefono = request.data["telefono"]
-        user.rfc = request.data["rfc"]
-        user.cubiculo = request.data["cubiculo"]
+        maestro.id_trabajador = request.data["id_trabajador"]
+        maestro.fecha_nacimiento = request.data["fecha_nacimiento"]
+        maestro.telefono = request.data["telefono"]
+        maestro.rfc = request.data["rfc"]
+        maestro.cubiculo = request.data["cubiculo"]
+        maestro.area_investigacion = request.data["area_investigacion"]
+        maestro.materias_array = request.data["materias_array"]
+        maestro.campus = request.data['campus']
+        maestro.sueldo = request.data['sueldo']
 
-        user.area_investigacion = request.data["area_investigacion"]
-        user.materias_array = request.data["materias_array"]
-
+        maestro.save()
 
         return Response({"message": "maestro actualizado correctamente"}, status=status.HTTP_200_OK)
+    
+    def delete(self, request, *args, **kwargs):
+        maestro = get_object_or_404(Maestros, id=request.GET.get("id"))
+        try:
+            maestro.user.delete()
+            return Response({"details":"Maestro eliminado"},200)
+        except Exception as e:
+            return Response({"details":"Error al eliminar maestro"},400)
 
 
 class MaestrosAll(generics.CreateAPIView):

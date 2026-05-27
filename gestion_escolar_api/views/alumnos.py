@@ -1,6 +1,7 @@
 from django.db.models import *
 from django.db import transaction
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from dateutil.parser import parse
 from django.contrib.auth.models import User, Group
 from gestion_escolar_api.models import *
@@ -73,7 +74,10 @@ class Alumnoview(generics.CreateAPIView):
                                             curp= request.data["curp"].upper(),
                                             carrera = request.data['carrera'],
                                             fecha_nacimiento = timezone.make_aware(parse(request.data['fecha_nacimiento'])),
-                                            materias_json = request.data['materias_json'])
+                                            materias_json = request.data['materias_json'],
+                                            direccion = request.data['direccion'],
+                                            sexo = request.data['sexo']
+                                            )
             admin.save()
 
             return Response({"Alumno  creado ID": admin.id }, 201)
@@ -96,19 +100,30 @@ class Alumnoview(generics.CreateAPIView):
         
         user = alumno.user
 
-        #vamos a actualizar los campos de los alumnos s
+        #vamos a actualizar los campos de los alumnos
         user.first_name = request.data["first_name"]
         user.last_name = request.data["last_name"]
         user.save()
 
-        user.fecha_nacimiento = request.data["fecha_nacimiento"]
-        user.telefono = request.data["telefono"]
-        user.curp = request.data["curp"]
-        user.carrera = request.data["carrera"]
-        user.materias_json = request.data["materias_json"]
+        alumno.matricula = request.data["matricula"]
+        alumno.fecha_nacimiento = request.data["fecha_nacimiento"]
+        alumno.telefono = request.data["telefono"]
+        alumno.curp = request.data["curp"]
+        alumno.carrera = request.data["carrera"]
+        alumno.materias_json = request.data["materias_json"]
 
-        user.save()
+        alumno.direccion = request.data['direccion'],
+        alumno.sexo = request.data['sexo']
+
+        alumno.save()
 
         return Response({"message": "Alumno actualizado correctamente"}, status=status.HTTP_200_OK)
+    def delete(self, request, *args, **kwargs):
+        alumno = get_object_or_404(Alumnos, id=request.GET.get("id"))
+        try:
+            alumno.user.delete()
+            return Response({"details":"Alumno eliminado"},200)
+        except Exception as e:
+            return Response({"details":"Error al alumno maestro"},400)
 
     
