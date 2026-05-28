@@ -60,7 +60,7 @@ class Alumnos(models.Model):
     curp = models.CharField(max_length=18, null=True, blank=True, unique=True)
     carrera = models.CharField(max_length=255, null=True, blank=True)
     materias_json = models.TextField(null=True, blank=True)  # igual que materias_array en Maestros
-    direccion = models.TextField(null=True, blank=True)
+    direccion = models.CharField(max_length=255, null=True, blank=True)
     sexo = models.TextField(null=True, blank=True)
     creation = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     update = models.DateTimeField(null=True, blank=True)

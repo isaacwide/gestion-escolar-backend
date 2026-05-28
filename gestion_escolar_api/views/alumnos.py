@@ -112,7 +112,7 @@ class Alumnoview(generics.CreateAPIView):
         alumno.carrera = request.data["carrera"]
         alumno.materias_json = request.data["materias_json"]
 
-        alumno.direccion = request.data['direccion'],
+        alumno.direccion = request.data['direccion']
         alumno.sexo = request.data['sexo']
 
         alumno.save()
